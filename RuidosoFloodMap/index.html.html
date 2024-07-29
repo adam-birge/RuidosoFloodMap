@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Ruidoso Fire and Flood Map</title>
+
+<script>
+  function initMap() {
+    // Initialize the map centered on a specific location
+    var map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 12,
+      center: { lat: 33.358, lng: -105.530 } // Adjust these coordinates to center on your GeoJSON data
+    });
+
+    // Legend information storage
+    var legendInfo = [];
+
+    // FEMA 500 year flood plain
+    var geoJsonLayer1 = new google.maps.Data();
+    fetch('GeoJSON/S_FLD_HAZ_AR_RioHondoOnly_dissolve_clean_50simp.geojson')
+      .then(response => response.json())
+      .then(data => {
+        if (data.type === "GeometryCollection") {
+          data = convertGeometryCollectionToFeatureCollection(data);
+        }
+        geoJsonLayer1.addGeoJson(data);
+        geoJsonLayer1.setStyle({
+          fillColor: 'blue',
+          strokeWeight: 1
+        });
+        geoJsonLayer1.setMap(map);
+
+        // Store legend info
+        legendInfo.push({ name: '500y Flood Plain', color: 'blue' });
+      })
+      .catch(error => {
+        console.error('Error fetching GeoJSON:', error);
+      });
+
+    // South Fork and Salt Fire burn scar maps
+    var geoJsonLayer2 = new google.maps.Data();
+    fetch('GeoJSON/WFIGS_Interagency_Perimeters_Current_1526902131246806732_Southfork_Salt_Only_clean_rewind.json')
+      .then(response => response.json())
+      .then(data2 => {
+        if (data2.type === "GeometryCollection") {
+          data2 = convertGeometryCollectionToFeatureCollection(data2);
+        }
+        geoJsonLayer2.addGeoJson(data2);
+        geoJsonLayer2.setStyle({
+          fillColor: 'red',
+          strokeWeight: 1,
+          fillOpacity: 0.1
+        });
+        geoJsonLayer2.setMap(map);
+
+        // Store legend info
+        legendInfo.push({ name: 'Burn Scar', color: 'red' });
+      })
+      .catch(error => {
+        console.error('Error fetching GeoJSON:', error);
+      });
+
+    // Adding markers for roadblocks and bridges
+    var locations = [
+      { lat: 33.339214, lng: -105.684533, caption1: "Brady Canyon Rd. @ Ponderosa Dr.", caption2: "May Close During Flooding" },
+      { lat: 33.334695, lng: -105.681167, caption1: "Mechem Dr. Bridge (Billy the Kid Trail / Hwy 48)", caption2: "May Close During Flooding" },
+      { lat: 33.334695, lng: -105.681167, caption1: "N Grindstone Canyon Rd. Bridge (north of Rio St)", caption2: "May Close During Flooding" },
+      { lat: 33.332789, lng: -105.670564, caption1: "Eagle Dr. Bridge", caption2: "May Close During Flooding" },
+      { lat: 33.332299, lng: -105.666871, caption1: "Country Club Dr. Bridge", caption2: "May Close During Flooding" },
+      { lat: 33.323925, lng: -105.650624, caption1: "Sudderth Dr. (between Carrizo Canyon Rd. and Paradise Canyon Dr.)", caption2: "May Close During Flooding" },
+      { lat: 33.325331, lng: -105.636366, caption1: "Reese Dr. Bridge", caption2: "May Close During Flooding" },
+      { lat: 33.324330, lng: -105.647218, caption1: "Paradise Canyon Dr. Bridge", caption2: "May Close During Flooding" },
+      { lat: 33.326183, lng: -105.634044, caption1: "Gavilan Canyon Rd. Bridge", caption2: "May Close During Flooding" },
+      { lat: 33.324649, lng: -105.625171, caption1: "Hwy. 70", caption2: "May Close During Flooding" },
+      { lat: 33.322952, lng: -105.627676, caption1: "Hwy. 70", caption2: "May Close During Flooding" },
+      { lat: 33.333916, lng: -105.689751, caption1: "Main Rd. 1st Bridge", caption2: "May Close During Flooding" },
+      { lat: 33.348149, lng: -105.672420, caption1: "Cree Meadows Dr. @ Wiley Rd. (Use Mechem to Metz as Detour)", caption2: "Roadblock" },
+      { lat: 33.347777, lng: -105.670147, caption1: "Cree Meadows Dr. @ Metz Dr. (Use Metz to Mechem as Detour)", caption2: "Roadblock" },
+      { lat: 33.343715, lng: -105.664130, caption1: "Hull Rd. @ Royal Dr.", caption2: "Roadblock" },
+      { lat: 33.341334, lng: -105.665859, caption1: "Paradise Canyon Dr. @ Country Club Dr.", caption2: "Roadblock" },
+      { lat: 33.337412, lng: -105.663818, caption1: "Paradise Canyon Dr.", caption2: "Roadblock" },
+    ];
+
+    // Icons for different types of markers
+    var icons = {
+      "May Close During Flooding": { url: "/GeoJSON/FloodCaution.svg", scaledSize: new google.maps.Size(25, 25) },
+      "Roadblock": { url: "/GeoJSON/roadblock.svg", scaledSize: new google.maps.Size(25, 25) }
+    };
+
+    locations.forEach(function (location) {
+      var marker = new google.maps.Marker({
+        position: { lat: location.lat, lng: location.lng },
+        map: map,
+        icon: icons[location.caption2],
+        title: location.caption2
+      });
+
+      var infoWindow = new google.maps.InfoWindow({
+        headerContent: `${location.caption1}`,
+        content: `${location.caption2}`
+      });
+
+      marker.addListener('click', function () {
+        infoWindow.open(map, marker);
+      });
+
+      marker.addListener('mouseout', function () {
+        infoWindow.close();
+      });
+    });
+
+    // Add polylines for closed roads
+    const polyline1 = new google.maps.Polyline({
+      path: google.maps.geometry.encoding.decodePath("yhpjEtc~cShAgM"),
+      strokeColor: "red",
+      strokeOpacity: 0.8,
+      strokeWeight: 4,
+      map: map
+    });
+
+    const polyline2 = new google.maps.Polyline({
+      path: google.maps.geometry.encoding.decodePath("gmojEzo|cSJJv@`@`@PrFjAdARbATd@Dh@K`AgAVMPIn@OhBSbBSpBKtAGz@Qh@[`@S"),
+      strokeColor: "red",
+      strokeOpacity: 0.8,
+      strokeWeight: 4,
+      map: map
+    });
+
+    const polyline3 = new google.maps.Polyline({
+      path: google.maps.geometry.encoding.decodePath("k~njErz|cSvAgD`AgANIXMn@O~@IpBWhBOjBIdAQRKz@c@"),
+      strokeColor: "red",
+      strokeOpacity: 0.8,
+      strokeWeight: 4,
+      map: map
+    });
+
+    // Add legend to the map
+    var legend = document.createElement('div');
+    legend.id = 'legend';
+    var legendHeader = document.createElement('div');
+    legendHeader.id = 'legend-header';
+    legendHeader.innerHTML = '<h3>Legend</h3>';
+    var legendContent = document.createElement('div');
+    legendContent.id = 'legend-content';
+
+    var content = [];
+
+    content.push('<div><span style="background-color: rgba(255,0,0,0.2); border: solid 1px black; width: 20px; height: 10px; display: inline-block; margin-right: 5px;"></span>Burn Scar</div>');
+    content.push('<div><span style="background-color: rgba(0,0,255,0.5); border: solid 1px black; width: 20px; height: 10px; display: inline-block; margin-right: 5px;"></span>500y Flood Plain</div>');
+    content.push('<div><img src="FloodCaution.svg" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 7px;">May Close During Flooding</div>');
+    content.push('<div><img src="roadblock.svg" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 7px;">Roadblock</div>');
+    content.push('<div><span style="border: 2px solid red; display: inline-block; width: 20px; height: 0; margin-right: 7px;"></span>Road Closed</div>');
+
+    legendContent.innerHTML = content.join('');
+    legend.appendChild(legendHeader);
+    legend.appendChild(legendContent);
+    legend.index = 1;
+    map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(legend);
+
+	legendContent.style.display = 'none';
+
+    // Toggle legend content visibility
+    legendHeader.addEventListener('click', function() {
+      if (legendContent.style.display === 'none') {
+        legendContent.style.display = 'block';
+      } else {
+        legendContent.style.display = 'none';
+      }
+    });
+
+    // Store the legend information for future reference
+    console.log("Legend Information:", legendInfo);
+  }
+
+  function convertGeometryCollectionToFeatureCollection(geometryCollection) {
+    const features = geometryCollection.geometries.map(geometry => {
+      return {
+        type: "Feature",
+        geometry: geometry,
+        properties: {} // You can add properties if needed
+      };
+    });
+    return {
+      type: "FeatureCollection",
+      features: features
+    };
+  }
+</script>
+
+<style>
+  #legend {
+    background: white;
+    padding: 10px;
+    margin: 10px;
+    font-size: 12px;
+    font-family: Arial, sans-serif;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  }
+  #legend h3 {
+    margin-top: 0;
+    cursor: pointer;
+  }
+  #legend div {
+    margin-bottom: 8px; /* Add vertical padding between items */
+  }
+  #legend-content {
+    display: block;
+  }
+</style>
+
+
+
+
+  </head>
+  <body>
+    <div id="map" style="height: 100vh; width: 100%;"></div>
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAQW0zx6_2IuuwSb8ssZHmN7ladwlO1Mmo&callback=initMap&loading=async&libraries=geometry">
+    </script>
+	
+  </body>
+</html>
