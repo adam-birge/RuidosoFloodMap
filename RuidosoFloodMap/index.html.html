@@ -82,8 +82,8 @@
 
     // Icons for different types of markers
     var icons = {
-      "May Close During Flooding": { url: "GeoJSON/FloodCaution.svg", scaledSize: new google.maps.Size(25, 25) },
-      "Roadblock": { url: "GeoJSON/roadblock.svg", scaledSize: new google.maps.Size(25, 25) }
+      "May Close During Flooding": { url: "icons/FloodCaution.svg", scaledSize: new google.maps.Size(25, 25) },
+      "Roadblock": { url: "icons/roadblock.svg", scaledSize: new google.maps.Size(25, 25) }
     };
 
     locations.forEach(function (location) {
@@ -146,8 +146,8 @@
 
     content.push('<div><span style="background-color: rgba(255,0,0,0.2); border: solid 1px black; width: 20px; height: 10px; display: inline-block; margin-right: 5px;"></span>Burn Scar</div>');
     content.push('<div><span style="background-color: rgba(0,0,255,0.5); border: solid 1px black; width: 20px; height: 10px; display: inline-block; margin-right: 5px;"></span>500y Flood Plain</div>');
-    content.push('<div><img src="FloodCaution.svg" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 7px;">May Close During Flooding</div>');
-    content.push('<div><img src="roadblock.svg" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 7px;">Roadblock</div>');
+    content.push('<div><img src="icons/FloodCaution.svg" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 7px;">May Close During Flooding</div>');
+    content.push('<div><img src="icons/roadblock.svg" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 7px;">Roadblock</div>');
     content.push('<div><span style="border: 2px solid red; display: inline-block; width: 20px; height: 0; margin-right: 7px;"></span>Road Closed</div>');
 
     legendContent.innerHTML = content.join('');
