@@ -59,54 +59,42 @@
         console.error('Error fetching GeoJSON:', error);
       });
 
-    // Adding markers for roadblocks and bridges
-    var locations = [
-      { lat: 33.339214, lng: -105.684533, caption1: "Brady Canyon Rd. @ Ponderosa Dr.", caption2: "May Close During Flooding" },
-      { lat: 33.334695, lng: -105.681167, caption1: "Mechem Dr. Bridge (Billy the Kid Trail / Hwy 48)", caption2: "May Close During Flooding" },
-      { lat: 33.333121, lng: -105.674878, caption1: "N Grindstone Canyon Rd. Bridge (north of Rio St)", caption2: "May Close During Flooding" },
-      { lat: 33.332789, lng: -105.670564, caption1: "Eagle Dr. Bridge", caption2: "May Close During Flooding" },
-      { lat: 33.332299, lng: -105.666871, caption1: "Country Club Dr. Bridge", caption2: "May Close During Flooding" },
-      { lat: 33.323925, lng: -105.650624, caption1: "Sudderth Dr. (between Carrizo Canyon Rd. and Paradise Canyon Dr.)", caption2: "May Close During Flooding" },
-      { lat: 33.325331, lng: -105.636366, caption1: "Reese Dr. Bridge", caption2: "May Close During Flooding" },
-      { lat: 33.324330, lng: -105.647218, caption1: "Paradise Canyon Dr. Bridge", caption2: "May Close During Flooding" },
-      { lat: 33.326183, lng: -105.634044, caption1: "Gavilan Canyon Rd. Bridge", caption2: "May Close During Flooding" },
-      { lat: 33.324649, lng: -105.625171, caption1: "Hwy. 70", caption2: "May Close During Flooding" },
-      { lat: 33.322952, lng: -105.627676, caption1: "Hwy. 70", caption2: "May Close During Flooding" },
-      { lat: 33.333916, lng: -105.689751, caption1: "Main Rd. 1st Bridge", caption2: "May Close During Flooding" },
-      { lat: 33.348149, lng: -105.672420, caption1: "Cree Meadows Dr. @ Wiley Rd. (Use Mechem to Metz as Detour)", caption2: "Roadblock" },
-      { lat: 33.347777, lng: -105.670147, caption1: "Cree Meadows Dr. @ Metz Dr. (Use Metz to Mechem as Detour)", caption2: "Roadblock" },
-      { lat: 33.343715, lng: -105.664130, caption1: "Hull Rd. @ Royal Dr.", caption2: "Roadblock" },
-      { lat: 33.341334, lng: -105.665859, caption1: "Paradise Canyon Dr. @ Country Club Dr.", caption2: "Roadblock" },
-      { lat: 33.337412, lng: -105.663818, caption1: "Paradise Canyon Dr.", caption2: "Roadblock" },
-    ];
+    // Load markers from CSV
+    fetch('Locations/markers.csv')
+      .then(response => response.text())
+      .then(csvText => {
+        const locations = parseCSV(csvText);
+        const icons = {
+          "May Close During Flooding": { url: "icons/FloodCaution.svg", scaledSize: new google.maps.Size(25, 25) },
+          "Roadblock": { url: "icons/roadblock.svg", scaledSize: new google.maps.Size(25, 25) }
+        };
 
-    // Icons for different types of markers
-    var icons = {
-      "May Close During Flooding": { url: "icons/FloodCaution.svg", scaledSize: new google.maps.Size(25, 25) },
-      "Roadblock": { url: "icons/roadblock.svg", scaledSize: new google.maps.Size(25, 25) }
-    };
+        locations.forEach(function (location) {
+          if (location.Visible === "Yes") {
+            var marker = new google.maps.Marker({
+              position: { lat: parseFloat(location.Lat), lng: parseFloat(location.Lng) },
+              map: map,
+              icon: icons[location.MarkerType],
+              title: location.MarkerType
+            });
 
-    locations.forEach(function (location) {
-      var marker = new google.maps.Marker({
-        position: { lat: location.lat, lng: location.lng },
-        map: map,
-        icon: icons[location.caption2],
-        title: location.caption2
+            var infoWindow = new google.maps.InfoWindow({
+              content: `<b>${location.Location}</b><br>${location.MarkerType}`
+            });
+
+            marker.addListener('click', function () {
+              infoWindow.open(map, marker);
+            });
+
+            marker.addListener('mouseout', function () {
+              infoWindow.close();
+            });
+
+            // Track marker ID for future use
+            marker.id = location.ID;
+          }
+        });
       });
-
-      var infoWindow = new google.maps.InfoWindow({
-        headerContent: `${location.caption1}`,
-        content: `${location.caption2}`
-      });
-
-      marker.addListener('click', function () {
-        infoWindow.open(map, marker);
-      });
-
-      marker.addListener('mouseout', function () {
-        infoWindow.close();
-      });
-    });
 
     // Add polylines for closed roads
     const polyline1 = new google.maps.Polyline({
@@ -156,7 +144,7 @@
     legend.index = 1;
     map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(legend);
 
-	legendContent.style.display = 'none';
+    legendContent.style.display = 'none';
 
     // Toggle legend content visibility
     legendHeader.addEventListener('click', function() {
@@ -169,6 +157,23 @@
 
     // Store the legend information for future reference
     console.log("Legend Information:", legendInfo);
+  }
+
+  function parseCSV(text) {
+    const lines = text.split('\n');
+    const headers = lines[0].split(',');
+    const locations = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      if (!lines[i]) continue;
+      const values = lines[i].split(',');
+      const location = {};
+      headers.forEach((header, index) => {
+        location[header.trim()] = values[index].trim();
+      });
+      locations.push(location);
+    }
+    return locations;
   }
 
   function convertGeometryCollectionToFeatureCollection(geometryCollection) {
@@ -185,6 +190,28 @@
     };
   }
 </script>
+
+<style>
+  #legend {
+    background: white;
+    padding: 10px;
+    margin: 10px;
+    font-size: 12px;
+    font-family: Arial, sans-serif;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  }
+  #legend h3 {
+    margin-top: 0;
+    cursor: pointer;
+  }
+  #legend div {
+    margin-bottom: 8px; /* Add vertical padding between items */
+  }
+  #legend-content {
+    display: block;
+  }
+</style>
+
 
 <style>
   #legend {
