@@ -96,13 +96,6 @@
         });
       });
 
-	//symbol for detour roads
-
-	  const orangeDash = {
-		path: "M 0,-1 0,1",
-		strokeOpacity: 1,
-		scale: 4,
-	  };
     // Load road segments from CSV
     fetch('Locations/road_segments.csv')
       .then(response => response.text())
@@ -125,23 +118,26 @@
               new google.maps.Polyline({
                 path: path,
                 strokeColor: "white",
-                strokeOpacity: 0.2,
+                strokeOpacity: 1.0,
                 strokeWeight: 6,
                 map: map
               });
               new google.maps.Polyline({
                 path: path,
                 strokeOpacity: 0,
-				icons: [
-				{
-					icon: orangeDash,
-					offset: "0",
-					repeat: "25px",
-				},
-				],
-				strokeColor: "orange",
-				strokeOpacity: 0.5,
-				map: map
+                icons: [{
+                  icon: {
+                    path: 'M 0,-1 0,1',
+                    strokeOpacity: 1,
+                    scale: 4
+                  },
+                  offset: '0',
+                  repeat: '20px'
+                }],
+                strokeColor: "orange",
+                strokeOpacity: 1.0,
+                strokeWeight: 3,
+                map: map
               });
             }
           }
@@ -153,7 +149,7 @@
     legend.id = 'legend';
     var legendHeader = document.createElement('div');
     legendHeader.id = 'legend-header';
-    legendHeader.innerHTML = '<h3>Legend</h3>';
+    legendHeader.innerHTML = '<h3>Legend (click to expand)</h3>';
     var legendContent = document.createElement('div');
     legendContent.id = 'legend-content';
 
@@ -164,6 +160,7 @@
     content.push('<div><img src="icons/FloodCaution.svg" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 7px;">May Close During Flooding</div>');
     content.push('<div><img src="icons/roadblock.svg" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 7px;">Roadblock</div>');
     content.push('<div><span style="border: 2px solid red; display: inline-block; width: 20px; height: 0; margin-right: 7px;"></span>Road Closed</div>');
+    content.push('<div><span style="border: 2px dashed orange; display: inline-block; width: 20px; height: 0; margin-right: 7px;"></span>Detour route</div>');
 
     legendContent.innerHTML = content.join('');
     legend.appendChild(legendHeader);
@@ -177,8 +174,10 @@
     legendHeader.addEventListener('click', function() {
       if (legendContent.style.display === 'none') {
         legendContent.style.display = 'block';
+        legendHeader.innerHTML = '<h3>Legend (click to close)</h3>';
       } else {
         legendContent.style.display = 'none';
+        legendHeader.innerHTML = '<h3>Legend (click to expand)</h3>';
       }
     });
 
@@ -235,9 +234,10 @@
     margin-bottom: 8px; /* Add vertical padding between items */
   }
   #legend-content {
-    display: block;
+    display: none;
   }
 </style>
+
 
 
 
