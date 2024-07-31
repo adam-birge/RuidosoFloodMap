@@ -79,7 +79,8 @@
             });
 
             var infoWindow = new google.maps.InfoWindow({
-              content: `<b>${location.Location}</b><br>${location.MarkerType}`
+              headerContent: `${location.Location}`
+			  content: `${location.MarkerType}`
             });
 
             marker.addListener('click', function () {
@@ -117,13 +118,6 @@
             } else if (segment.Type === "Detour") {
               new google.maps.Polyline({
                 path: path,
-                strokeColor: "white",
-                strokeOpacity: 1.0,
-                strokeWeight: 6,
-                map: map
-              });
-              new google.maps.Polyline({
-                path: path,
                 strokeOpacity: 0,
                 icons: [{
                   icon: {
@@ -135,7 +129,7 @@
                   repeat: '20px'
                 }],
                 strokeColor: "orange",
-                strokeOpacity: 1.0,
+                strokeOpacity: 0,
                 strokeWeight: 3,
                 map: map
               });
