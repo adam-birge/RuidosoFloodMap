@@ -96,30 +96,44 @@
         });
       });
 
-    // Add polylines for closed roads
-    const polyline1 = new google.maps.Polyline({
-      path: google.maps.geometry.encoding.decodePath("yhpjEtc~cShAgM"),
-      strokeColor: "red",
-      strokeOpacity: 0.8,
-      strokeWeight: 4,
-      map: map
-    });
-
-    const polyline2 = new google.maps.Polyline({
-      path: google.maps.geometry.encoding.decodePath("gmojEzo|cSJJv@`@`@PrFjAdARbATd@Dh@K`AgAVMPIn@OhBSbBSpBKtAGz@Qh@[`@S"),
-      strokeColor: "red",
-      strokeOpacity: 0.8,
-      strokeWeight: 4,
-      map: map
-    });
-
-    const polyline3 = new google.maps.Polyline({
-      path: google.maps.geometry.encoding.decodePath("k~njErz|cSvAgD`AgANIXMn@O~@IpBWhBOjBIdAQRKz@c@"),
-      strokeColor: "red",
-      strokeOpacity: 0.8,
-      strokeWeight: 4,
-      map: map
-    });
+    // Load road segments from CSV
+    fetch('Locations/road_segments.csv')
+      .then(response => response.text())
+      .then(csvText => {
+        const roadSegments = parseCSV(csvText);
+        
+        roadSegments.forEach(function (segment) {
+          if (segment.Visible === "Yes") {
+            const path = google.maps.geometry.encoding.decodePath(segment.EncodedString);
+            
+            if (segment.Type === "Closed") {
+              new google.maps.Polyline({
+                path: path,
+                strokeColor: "red",
+                strokeOpacity: 0.8,
+                strokeWeight: 4,
+                map: map
+              });
+            } else if (segment.Type === "Detour") {
+              new google.maps.Polyline({
+                path: path,
+                strokeColor: "white",
+                strokeOpacity: 1.0,
+                strokeWeight: 6,
+                map: map
+              });
+              new google.maps.Polyline({
+                path: path,
+                strokeColor: "orange",
+                strokeOpacity: 1.0,
+                strokeWeight: 3,
+                strokeDasharray: [10, 5], // Creating a dashed effect
+                map: map
+              });
+            }
+          }
+        });
+      });
 
     // Add legend to the map
     var legend = document.createElement('div');
@@ -190,28 +204,6 @@
     };
   }
 </script>
-
-<style>
-  #legend {
-    background: white;
-    padding: 10px;
-    margin: 10px;
-    font-size: 12px;
-    font-family: Arial, sans-serif;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-  }
-  #legend h3 {
-    margin-top: 0;
-    cursor: pointer;
-  }
-  #legend div {
-    margin-bottom: 8px; /* Add vertical padding between items */
-  }
-  #legend-content {
-    display: block;
-  }
-</style>
-
 
 <style>
   #legend {
