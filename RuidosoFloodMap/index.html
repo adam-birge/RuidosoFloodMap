@@ -96,6 +96,13 @@
         });
       });
 
+	//symbol for detour roads
+
+	  const lineSymbol = {
+		path: "M 0,-1 0,1",
+		strokeOpacity: 1,
+		scale: 4,
+	  };
     // Load road segments from CSV
     fetch('Locations/road_segments.csv')
       .then(response => response.text())
@@ -124,11 +131,16 @@
               });
               new google.maps.Polyline({
                 path: path,
-                strokeColor: "orange",
-                strokeOpacity: 1.0,
-                strokeWeight: 3,
-                strokeDasharray: [10, 5], // Creating a dashed effect
-                map: map
+                strokeOpacity: 0,
+				icons: [
+				{
+					icon: orangeDash,
+					offset: "0",
+					repeat: "25px",
+				},
+				],
+				strokeColor: "orange",
+				map: map
               });
             }
           }
